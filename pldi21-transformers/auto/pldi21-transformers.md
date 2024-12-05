@@ -12,62 +12,102 @@ Martin Vechev ETH Zurich, Switzerland martin.vechev@inf.ethz.ch
 
 We present DeepT, a novel method for certifying Transformer networks based on abstract interpretation. The key idea behind DeepT is our new Multi-norm Zonotope abstract domain, an extension of the classical Zonotope designed to handle $\ell^{1}$ and $\ell^{2}$ -norm bound perturbations. We introduce all Multi-norm Zonotope abstract transformers necessary to handle these complex networks, including the challenging softmax function and dot product.  
 
-Our evaluation shows that DeepT can certify average robustness radii that are $28\times$ larger than the state-of-the-art, while scaling favorably. Further, for the first time, we certify Transformers against synonym attacks on long sequences of words, where each word can be replaced by any synonym. DeepT achieves a high certification success rate on sequences of words where enumeration-based verification would take 2 to 3 orders of magnitude more time.  
+Our evaluation shows that DeepT can certify <mark>average robustness radii that are $28\times$ larger than the state-of-the-art</mark>, while scaling favorably. Further, for the first time, we certify Transformers against <mark>synonym attacks</mark> on long sequences of words, where each word can be replaced by any synonym. DeepT achieves a high certification success rate on sequences of words where enumeration-based verification would take 2 to 3 orders of magnitude more time.  
 
-# CCS Concepts: • Theory of computation $\rightarrow$ Program verification; Abstraction; $\bullet$ Computing methodologies $\to$ Neural networks.  
+**CCS Concepts**: • Theory of computation $\rightarrow$ Program verification; Abstraction; $\bullet$ Computing methodologies $\to$ Neural networks.  
 
-Keywords: Abstract Interpretation, Robustness Certification, Deep Learning, Adversarial attacks, Transformer Networks  
+**Keywords**: Abstract Interpretation, Robustness Certification, Deep Learning, Adversarial attacks, Transformer Networks  
 
 # ACM Reference Format:  
 
 Gregory Bonaert, Dimitar I. Dimitrov, Maximilian Baader, and Martin Vechev. 2021. Fast and Precise Certification of Transformers. In Proceedings of the 42nd ACM SIGPLAN International Conference on Programming Language Design and Implementation (PLDI ’21), June 20–25, 2021, Virtual, Canada. ACM, New York, NY, USA, 18 pages. https://doi.org/10.1145/3453483.3454056  
 
-![](images/36cf7a88eab0196ec3140963847fd3369ecfce5b14448bd4d4361e4ffe41c220.jpg)  
-Figure 1. Certification against synonym attacks: input is a sentence (2 of the words each have 2 colored synonyms), the words are embedded; on two of the embeddings we create an abstract region which captures synonyms. Then, our verifier DeepT takes this region and proves that any sentence whose embedding is inside it classifies to a “negative” sentiment.  
 
 # 1 Introduction  
 
-It has been established that neural networks can be tricked into misclassifying images by small, imperceptible changes to the input, called adversarial attacks [52]. Since their discovery, the community has developed many different attacks, including $\ell^{p}$ -norm bound perturbations [18, 36, 52] as well as geometric perturbations like rotations and translations [13, 25, 42]. The existence of adversarial examples has driven the need for methods and tools able to formally verify the robustness of neural networks against these attacks. Early works on $\ell^{p}$ -norm bound certification included [15, 56], while later research investigated certification against geometric transformations [3, 14, 39, 44, 50]. While many works focused on certifying networks operating on continuous input spaces such as images, substantially less research exists on the setting of networks with a discrete input space, as in natural language processing (NLP) tasks, where the input is a word sequence. Recently, however, neural networks for NLP tasks were successfully attacked by exchanging words in the input sequence with synonyms [1, 5, 22, 23, 31, 34].  
+It has been established that neural networks can be tricked into misclassifying images by small, imperceptible changes to the input, called adversarial attacks [52]. Since their discovery, the community has developed many different attacks, including $\ell^{p}$ -norm bound perturbations [18, 36, 52] as well as geometric perturbations like rotations and translations [13, 25, 42]. The existence of adversarial examples has driven the need for methods and tools able to formally verify the robustness of neural networks against these attacks. Early works on $\ell^{p}$ -norm bound certification included [15: $\text{AI}^2$, 56], while later research investigated certification against geometric transformations [3, 14, 39, 44, 50]. While many works focused on certifying networks operating on continuous input spaces such as images, substantially less research exists on the setting of networks with a discrete input space, as in natural language processing (NLP) tasks, where the input is a word sequence. Recently, however, neural networks for NLP tasks were successfully attacked by exchanging words in the input sequence with synonyms [1, 5, 22, 23, 31, 34].  
 
-Transformer Networks. A successful recent neural network architecture for NLP is the Transformer network [54]. Since its introduction, these networks have delivered stateof-the-art performance across many NLP tasks [27, 58]. Further, Transformer networks were successfully applied to a wide variety of other tasks including object detection [7], graph classification [32], speech recognition [20], and visual question answering [33]. The core part of a Transformer network is a stack of self-attention layers. For NLP tasks, the first layer of this stack is preceded by an embedding layer, mapping words to vectors in an embedding space.  
+> **Adversarial attacks in neural network**: From $\ell^{p}$ -norm bound perturbations (geometric transformations) to synonyms exchange. From image to NLP, continuous to discrete.
 
-Certification of Transformer Networks. As the set of words is discrete, to perform certification in the NLP setting, one might try enumeration in order to certify the absence of adversarial examples, by classifying every combination of synonyms. However, while this works well for short sentences consisting of words having few synonyms, enumeration is already infeasible for moderately sized sequences where a few words have many synonyms. A method to circumvent enumeration is to approximate the region of synonym embeddings using an abstract shape. This shape can then be propagated through the network (as standard in neural network verification), as illustrated in Figure 1. In the recent work of [47], a linear relaxation was used to certify Transformer networks against $\ell^{p}$ -norm bound attacks applied to word embeddings for $p\,\in\,\{1,2,\infty\}$ . However, the work of [47] does not scale to large Transformer networks, with their verifiers having either a dramatically reduced certification ability as the network becomes deeper or becoming impractically slow (superlinear verification time growth). The main challenge in Transformer network verification is creating scalable and precise methods to handle the effects of the softmax function and the dot product. This is difficult as these functions apply non-linearities on multiple terms under perturbation, simultaneously. Specifically, the challenge for the dot product are the many occurrences of multiplication, while the challenge for the softmax function is the occurrence of the exponential and reciprocal.  
+**Transformer Networks**. A successful recent neural network architecture for NLP is the Transformer network [54]. Since its introduction, these networks have delivered stateof-the-art performance across many NLP tasks [27, 58]. Further, Transformer networks were successfully applied to a wide variety of other tasks including object detection [7], graph classification [32], speech recognition [20], and visual question answering [33]. The core part of a Transformer network is a stack of self-attention layers. <Mark>For NLP tasks, the first layer of this stack is preceded by an embedding layer, mapping words to vectors in an embedding space.</Mark> 
 
-This Work: Precise Certification of Transformers. In this work, we address this challenge and present a verifier called DeepT, able to certify significantly larger Transformer networks, compared to prior work. The key idea is a new abstract domain, referred to as the Multi-norm Zonotope, which improves the precision of the standard Zonotope (that has so far been successfully used for robustness certification of images [49, 55]). Our central contribution is a set of carefully designed abstract transformers that handle critical components of the Transformer architecture, including the challenging self-attention (composed of dot products and softmax functions), balancing scalability and precision.  
+> Success of Transformer in NLP and CV.
+
+![](images/36cf7a88eab0196ec3140963847fd3369ecfce5b14448bd4d4361e4ffe41c220.jpg)  
+**Figure 1**. Certification against synonym attacks: input is a sentence (2 of the words each have 2 colored synonyms), the words are embedded; on two of the embeddings we create an abstract region which captures synonyms. Then, our verifier DeepT takes this region and proves that any sentence whose embedding is inside it classifies to a “negative” sentiment.  
+
+**Certification of Transformer Networks**. As the set of words is discrete, to perform certification in the NLP setting, one might try enumeration in order to certify the absence of adversarial examples, by classifying every combination of synonyms. However, while this works well for short sentences consisting of words having few synonyms, enumeration is already infeasible for moderately sized sequences where a few words have many synonyms. A method to circumvent enumeration is to approximate the region of synonym embeddings using an abstract shape. This shape can then be propagated through the network (as standard in neural network verification), as illustrated in Figure 1. In the recent work of [47], a linear relaxation was used to certify Transformer networks against $\ell^{p}$ -norm bound attacks applied to word embeddings for $p\,\in\,\{1,2,\infty\}$ . However, the work of [47] <Mark>does not scale to large Transformer networks</Mark>, with their verifiers having either a dramatically reduced certification ability as the network becomes deeper or becoming impractically slow (superlinear verification time growth). The main challenge in Transformer network verification is creating <Mark>scalable and precise methods to handle the effects of the softmax function and the dot product</Mark>. This is difficult as these functions apply non-linearities on multiple terms under perturbation, simultaneously. Specifically, the challenge for the dot product are the many occurrences of multiplication, while the challenge for the softmax function is the occurrence of the exponential and reciprocal.  
+
+> - The reason utilzing abstract interperation rather than enumerating the combination of synonyms in long sentences.
+> - Difficults of dot product and SoftMax in Transformer.
+
+**This Work: Precise Certification of Transformers**. In this work, we address this challenge and present <mark>a verifier called DeepT</mark>, able to certify significantly larger Transformer networks, compared to prior work. <mark>The key idea is a new abstract domain, referred to as the Multi-norm Zonotope</mark>, which improves the precision of the standard Zonotope (that has so far been successfully used for robustness certification of images [49, 55]). Our central contribution is a set of carefully designed abstract transformers that handle critical components of the Transformer architecture, including the challenging self-attention (composed of dot products and softmax functions), balancing scalability and precision.  
 
 We specifically focus on encoder Transformer networks and show that DeepT can certify on average significantly higher robustness radii (up to more than $28\times$ ), particularly of deep Transformer networks, compared to state-of-the-art [47], in comparable time. Further, DeepT can certify robustness against attacks where each word can be replaced by synonyms. For long sentences, DeepT outperforms enumerationbased methods by 2 to 3 orders of magnitude.  
 
-Main Contributions. Our main contributions are:  
+**Main Contributions**. Our main contributions are:  
 
-• The first robustness certification for synonym attacks on Transformer network classification, where each word in long word sequences can potentially be replaced by any synonym, simultaneously. • The Multi-norm Zonotope domain together with abstract transformers for all functions occurring in Transformer networks. Carefully constructed abstract transformers for the dot-product and the softmax function, that strike a good balance between precision and performance. • A verifier called DeepT based on our abstract transformers, and an extensive experimental evaluation showing DeepT is able to scale certification to significantly larger Transformer networks.  
+- The first robustness certification for synonym attacks on Transformer network classification, where each word in long word sequences can potentially be replaced by any synonym, simultaneously. 
+- The Multi-norm Zonotope domain together with abstract transformers for all functions occurring in Transformer networks. 
+- Carefully constructed abstract transformers for the dot-product and the softmax function, that strike a good balance between precision and performance. 
+- A verifier called DeepT based on our abstract transformers, and an extensive experimental evaluation showing DeepT is able to scale certification to significantly larger Transformer networks.
+
+> Contributions:
+> - A different perterbation method. (synonyms)
+> - A new abstract domain.
+> - Proposals to handel dot-product and SoftMax function.
+> - Additional experiments. 
+
+
 
 # 2 Overview  
 
 We now explain the threat model we are certifying against and how this threat model relates to other threat models. Then, we provide an informal explanation of our method for certifying the robustness of Transformer networks. A detailed explanation is provided in Section 4 and Section 5.  
 
-Threat Models. In this work we focus on binary sentiment classification, where each input sentence is either positive or negative, a standard NLP classification task.  
+**Threat Models.** In this work we focus on <mark>binary sentiment classification</mark>, where each input sentence is either positive or negative, a standard NLP classification task.  
 
-In our threat model T1, the adversary can perturb an input sequence by adding $\ell^{p}$ noise $(p\,\in\,\{1,2,\infty\})$ ) to the embedding of a word. The threat model T2 allows the attacker to exchange every word in the input sequence with a synonym.  
+In our threat model T1, the adversary can perturb an input sequence by adding $\ell^{p}$ noise $(p\,\in\,\{1,2,\infty\})$ to the embedding of a word. The threat model T2 allows the attacker to exchange every word in the input sequence with a synonym.  
 
-The two threat models are related since a good embedding will map synonyms to points in the embedding space that are close to each other [40]. If we certify robustness for an $\ell^{p}$ - norm bound region around a point in the embedding space, then all words (synonyms) that have their embedding in that region will not change the classification of that sentence. Further, if we have a word we would like to replace, we can certify an $\ell^{p}$ -norm bound ball covering the embeddings of all the replacement words, in order to certify against attacks as in [1]. The process is depicted in Figure 1.  
+The two threat models are related since a good embedding will map synonyms to points in the embedding space that are close to each other [40]. If we certify robustness for an $\ell^{p}$ - norm bound region around a point in the embedding space, then all words (synonyms) that have their embedding in that region will not change the classification of that sentence. Further, if we have a word we would like to replace, we can certify an $\ell^{p}$ -norm bound ball covering the embeddings of all the replacement words, in order to certify against <mark>attacks as in [1]</mark>. The process is depicted in Figure 1.  
 
-Robustness Certification. Inspired by the success of the Zonotope domain in the context of robustness certification for images [15, 49], we introduce the Multi-norm Zonotope in order to certify the robustness of Transformer networks performing binary sequence classification. The Multi-norm Zonotope is an extension of the classical Zonotope domain, containing new noise symbols bounded by an $\ell^{p}$ -norm. This improves certification against $\ell^{p}$ -norm bound attacks.  
+> Task: binary sentiment classification
+> 
+> Object: Model T1: $\ell^{p}$ - norm
+> 
+> Model T2: synonyms
+>
+> In a good embedding, synonyms should in $\ell^{p}$ region.
+
+**Robustness Certification.** Inspired by the success of the Zonotope domain in the context of robustness certification for images [15, 49], we introduce <mark>the Multi-norm Zonotope</mark> in order to certify the robustness of Transformer networks performing binary sequence classification. The Multi-norm Zonotope is an extension of the classical Zonotope domain, containing new noise symbols bounded by an $\ell^{p}$ -norm. This improves certification against $\ell^{p}$ -norm bound attacks.  
 
 We define abstract transformers for the Multi-norm Zonotope domain for all operations in the Transformer network, including affine operations, ReLU, tanh, exponential, reciprocal, dot product and softmax. It is particularly challenging to tightly approximate the dot product and the softmax function, since they may apply multiplications or divisions between two variables under perturbation. Additionally, the quadratic number of interactions between noise symbols leads to a blow-up of the number of noise symbols which slows down computation or even renders it infeasible. To address these issues, we carefully construct the abstract transformers for the softmax and dot product to achieve high precision while maintaining good performance. Further, the number of noise symbols is periodically reduced to lower memory use and improve performance.  
 
-We certify the robustness of a Transformer network by constructing a Multi-norm Zonotope capturing the $\ell^{p}$ region around the embedding of a given input sequence (See Figure 1), which is then propagated through the whole network using our abstract transformers. Thus, we obtain a Multi-norm Zonotope representing an over-approximation of the possible outputs of the Transformer network. Finally, robustness can be certified if the lower bound of $y_{t}\!-\!y_{f}$ is positive where $y_{t}$ is the true class output and $y_{f}$ is the false class output.  
+We certify the robustness of a Transformer network by constructing a Multi-norm Zonotope capturing the $\ell^{p}$ region around the embedding of a given input sequence (See Figure 1), which is then propagated through the whole network using our abstract transformers. Thus, we obtain a Multi-norm Zonotope representing an over-approximation of the possible outputs of the Transformer network. Finally, robustness can be certified if the lower bound of $y_{t}\!-\!y_{f}$ is positive where $y_{t}$ is the true class output and $y_{f}$ is the false class output. 
+
+> A new abstract domain called Multi-norm Zonotope.
+>
+> The carefully abstract transformers for dot-product and SoftMax.
+>
+> A procedure of the Transformer robustness certification. 
 
 # 3 Background  
 
 In this section, we describe the background needed for the rest of the paper. We first demonstrate the Transformer architecture instantiated to binary sequence classification, after which we explain the Zonotope domain and how Zonotopes are used for neural network verification.  
 
-# 3.1 Transformer Networks  
+![](images/3165fe02b72fa9635c1e58d52060fcaedf529e79edfd20c7052ccd61f273079a.jpg)  
+**Figure 2.** The Transformer network architecture for sequence classification. The tokenized input first gets embedded, to which a positional encoding is added. After $M$ Transformer network layers, pooling follows, which in turn is followed by a classifier.  
+
+## 3.1 Transformer Networks  
 
 In this work, we apply Transformer networks to the task of binary sequence classification, like sentiment prediction. The transformer network takes as input a sequence of tokens (e.g., words) and processes them to get a binary answer (Figure 2). The length of the sequence is variable and is denoted by $N$ .  
 
-A Transformer network first embeds each token $\mathtt{t o k e n}_{j}$ into $\mathbb{R}^{E}$ via a discrete mapping. Then a position embedding $\flat_{j}$ is added, to facilitate the encoding of the location $j$ . This encoded sequence is then passed through $M$ Transformer network layers (Figure 3), after which the encoded sequence passes through a pooling layer followed by a classifier.  
+A Transformer network first embeds each token $\mathtt{t o k e n}_{j}$ into $\mathbb{R}^{E}$ via a discrete mapping. Then a position embedding $\flat_{j}$ is added, to facilitate the encoding of the location $j$ . This encoded sequence is then passed through $M$ Transformer network layers (Figure 3), after which the encoded sequence passes through a pooling layer followed by a classifier. 
 
-Self-Attention. The key component of a Transformer network layer (Figure 3) is its self-attention mechanism, which processes all sequence elements in conjunction, and thus is able to extract relationships between them.  
+
+![](images/3ab66578b33a47c8ab8d6eb87a0baaea27ff493ec81320111175b6abe09af05f.jpg)  
+**Figure 3.** A Transformer layer is composed of a multi-head self-attention and a feed-forward network (FFN). Each component is bypassed by a residual connection (dotted lines) and followed by a normalization layer. 
+
+**Self-Attention.** The key component of a Transformer network layer (Figure 3) is its self-attention mechanism, which processes all sequence elements in conjunction, and thus is able to extract relationships between them.  
 
 The self-attention receives $N$ inputs $\vec{x}_{1},\dots,\vec{x}_{N}\in\mathbb{R}^{E}$ . We transpose and stack them into the matrix $X\in\mathbb{R}^{N\times E}$ to simplify notation. $X$ is then multiplied by 3 separate matrices $W_{Q},W_{K}~\in~\mathbb{R}^{E\times d_{k}}$ and $W_{V}\ \in\ \bar{\mathbb{R}}^{E\times d_{v}}$ to obtain the queries $Q:=X\,W_{Q}$ , the keys $K:=X\,W_{K}$ and the values $V:=X\,W_{V}$ of the embeddings $X$ . The self-attention output $Z$ is then obtained, by computing  
 
@@ -85,27 +125,19 @@ is applied to every element row by row. Here, $\sigma_{i}$ indicates the $\bar{i
 
 We note that the softmax is an integral part of the transformer network itself, contrary to most other neural network architectures where it is only used after the final classification layer to define the training loss.  
 
-Multi-Head Self-Attention. Similarly to convolutional neural networks, where multiple convolution filters can be used per layer, multiple self-attentions (called attention heads) can be combined in one layer. If we have $A$ attention heads, each with its own $W_{K},W_{Q}$ and $W_{V}$ matrix, we get $A$ matrices $Z_{a}$ , where $a\,\in\,1,\ldots,A$ . These are horizontally stacked and multiplied from the right with a matrix $W_{0}\,\in\,\mathbb{R}^{(A d_{v})\times E}$ , resulting in a matrix $Z\in\mathbb{R}^{N\times E}$ . As before, rows $\vec{z}_{1},\dotsc\dotsc,\vec{z}_{N}$ of $Z$ are then returned.  
+**Multi-Head Self-Attention.** Similarly to convolutional neural networks, where multiple convolution filters can be used per layer, multiple self-attentions (called attention heads) can be combined in one layer. If we have $A$ attention heads, each with its own $W_{K},W_{Q}$ and $W_{V}$ matrix, we get $A$ matrices $Z_{a}$ , where $a\,\in\,1,\ldots,A$ . These are horizontally stacked and multiplied from the right with a matrix $W_{0}\,\in\,\mathbb{R}^{(A d_{v})\times E}$ , resulting in a matrix $Z\in\mathbb{R}^{N\times E}$ . As before, rows $\vec{z}_{1},\dotsc\dotsc,\vec{z}_{N}$ of $Z$ are then returned.  
 
-Residual Connections and Normalization. The inputs $\vec{x}_{j}$ of each multi-head self-attention layer are added to the corresponding outputs $\vec{z}_{j}$ , thus creating a residual connection [21]. This is followed by a layer normalization step [2] but without the division by the standard deviation. [47] found that not dividing by the standard deviation has no significant impact on the performance, but improves certification rates (see Section 6.6). Thus each vector $\vec{v}_{j}=\vec{x}_{j}+\vec{z}_{j}$ is normalized by mapping it to $\vec{v}_{j}\mathrm{~-~}\operatorname{mean}(\vec{v}_{j})$ . This normalized value is then multiplied by a parameter after which a bias is added.  
+**Residual Connections and Normalization.** The inputs $\vec{x}_{j}$ of each multi-head self-attention layer are added to the corresponding outputs $\vec{z}_{j}$ , thus creating a residual connection [21]. This is followed by a layer normalization step [2] but without the division by the standard deviation. [47] found that not dividing by the standard deviation has no significant impact on the performance, but improves certification rates (see Section 6.6). Thus each vector $\vec{v}_{j}=\vec{x}_{j}+\vec{z}_{j}$ is normalized by mapping it to $\vec{v}_{j}\mathrm{~-~}\operatorname{mean}(\vec{v}_{j})$ . This normalized value is then multiplied by a parameter after which a bias is added.  
 
-Feed-Forward Network. The normalization is followed by applying the same feed-forward neural network, mapping $\mathbb{R}^{N}$ to $\mathbb{R}^{N}$ , to each of the $N$ output embeddings. This network consists of one hidden ReLU layer of size $H$ (hidden size). Similarly to the Multi-head self-attention, the feed-forward networks are encapsulated with a residual connection, followed by a normalization layer as described above.  
+**Feed-Forward Network.** The normalization is followed by applying the same feed-forward neural network, mapping $\mathbb{R}^{N}$ to $\mathbb{R}^{N}$ , to each of the $N$ output embeddings. This network consists of one hidden ReLU layer of size $H$ (hidden size). Similarly to the Multi-head self-attention, the feed-forward networks are encapsulated with a residual connection, followed by a normalization layer as described above.  
 
-Pooling and Classification. In order for the network to produce a final classification output, after the $M^{\mathrm{th}}$ transformer network layer, we pick its first output embedding and disregard the others (pooling). The first output embedding is then pushed through a tanh hidden layer, followed by a binary linear classifier (Figure 2).  
+**Pooling and Classification.** In order for the network to produce a final classification output, after the $M^{\mathrm{th}}$ transformer network layer, we pick its first output embedding and disregard the others (pooling). <mark>The first output embedding is then pushed through a tanh hidden layer</mark>, followed by a binary linear classifier (Figure 2).  
 
-# 3.2 Zonotope Certification  
+## 3.2 Zonotope Certification  
 
 Our work builds upon the Zonotope abstract domain, which was used to successfully certify neural networks applied to image classification tasks [15, 49].  
 
-Zonotopes. A classical Zonotope [16] abstracts a set of $N\in\mathbb{N}$ variables and associates the $k$ -th variable with an  
-
-![](images/3165fe02b72fa9635c1e58d52060fcaedf529e79edfd20c7052ccd61f273079a.jpg)  
-Figure 2. The Transformer network architecture for sequence classification. The tokenized input first gets embedded, to which a positional encoding is added. After $M$ Transformer network layers, pooling follows, which in turn is followed by a classifier.  
-
-![](images/3ab66578b33a47c8ab8d6eb87a0baaea27ff493ec81320111175b6abe09af05f.jpg)  
-Figure 3. A Transformer layer is composed of a multi-head self-attention and a feed-forward network (FFN). Each component is bypassed by a residual connection (dotted lines) and followed by a normalization layer.  
-
-affine expression $x_{k}$ using $\mathcal{E}\in\mathbb{N}$ noise symbols defined by  
+**Zonotopes.** A classical Zonotope [16] abstracts a set of $N\in\mathbb{N}$ variables and associates the $k$ -th variable with an affine expression $x_{k}$ using $\mathcal{E}\in\mathbb{N}$ noise symbols defined by  
 
 $$
 x_{k}=c_{k}+\sum_{i=1}^{\mathcal{E}}\beta_{k}^{i}\epsilon_{i}=c_{k}+\vec{\beta}_{k}\cdot\vec{\epsilon},
@@ -113,13 +145,13 @@ $$
 
 where $c_{k},\beta_{k}^{i}\,\in\,\mathbb{R}$ and $\epsilon_{i}\;\in\;[-1,1]$ . The value $x_{k}$ can deviate from its center coefficient $c_{k}$ through a series of noise symbols $\epsilon_{i}$ scaled by the coefficients $\beta_{k}^{i}$ . The set of noise symbols $\vec{\epsilon}$ is shared among different variables, thus encoding dependencies between $N$ values abstracted by the zonotope.  
 
-Affine Abstract Transformer. All affine arithmetic operations such as sums, subtractions or scalings can be applied directly in the abstract Zonotope domain. Since affine arithmetic is exact, the corresponding abstract transformers are optimal. Given two variables $x_{1}\,=\,c_{1}+\vec{\beta}_{1}\cdot\vec{\epsilon}$ and $x_{2}=c_{2}+\overline{{{\beta}}}_{2}\cdot\vec{\epsilon},$ , the abstract transformer for the affine operation $z=a x_{1}+b x_{2}+c$ is  
+**Affine Abstract Transformer.** All affine arithmetic operations such as sums, subtractions or scalings can be applied directly in the abstract Zonotope domain. Since affine arithmetic is exact, the corresponding abstract transformers are optimal. Given two variables $x_{1}\,=\,c_{1}+\vec{\beta}_{1}\cdot\vec{\epsilon}$ and $x_{2}=c_{2}+\overline{{{\beta}}}_{2}\cdot\vec{\epsilon},$ , the abstract transformer for the affine operation $z=a x_{1}+b x_{2}+c$ is  
 
 $$
 z=(a c_{1}+b c_{2}+c)+(a\vec{\beta}_{1}+b\vec{\beta}_{2})\cdot\vec{\epsilon}.
 $$  
 
-ReLU Abstract Transformer. We leverage the minimal area abstract transformer for the ReLU developed in [49], which is applied element-wise. Concretely, the Zonotope abstract transformer for $\mathrm{ReLU}(x)=\operatorname*{max}(0,x)$ of the zonotope  
+**ReLU Abstract Transformer.** We leverage the minimal area abstract transformer for the ReLU developed in [49], which is applied element-wise. Concretely, the Zonotope abstract transformer for $\mathrm{ReLU}(x)=\operatorname*{max}(0,x)$ of the zonotope  
 
 variable $x$ is  
 
@@ -130,12 +162,12 @@ $$
 where $l$ and $u$ denote the lower and upper bound of $x$ and  
 
 $$
-\begin{array}{r}{\lambda=u/(u-l)}\\ {\mu=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u).}\end{array}
+\begin{array}{l}{\lambda=u/(u-l)}\\ {\mu=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u).}\end{array}
 $$  
 
-Certification. To certify the robustness of a neural network on an input region, we express that region in zonotope form and propagate it through the network using abstract transformers. The resulting output zonotope is an over-approximation of the possible outputs of the network. Given the correct class output $y_{t}$ and the incorrect class output $y_{f}$ , the robustness is proven if the lower bound of $y_{t}-y_{f}$ is positive.  
+**Certification.** To certify the robustness of a neural network on an input region, we express that region in zonotope form and propagate it through the network using abstract transformers. The resulting output zonotope is an over-approximation of the possible outputs of the network. Given the correct class output $y_{t}$ and the incorrect class output $y_{f}$ , the robustness is proven if the lower bound of $y_{t}-y_{f}$ is positive.  
 
-# 3.3 Dual Norm  
+## 3.3 Dual Norm  
 
 For a given vector $\vec{z}\,\in\,\mathbb R^{N}$ , the dual norm $\|\cdot\|_{p}^{*}$ of the $\ell^{p}$ norm is defined by [43] as:  
 
