@@ -127,7 +127,7 @@ We note that the softmax is an integral part of the transformer network itself, 
 
 **Multi-Head Self-Attention.** Similarly to convolutional neural networks, where multiple convolution filters can be used per layer, multiple self-attentions (called attention heads) can be combined in one layer. If we have $A$ attention heads, each with its own $W_{K},W_{Q}$ and $W_{V}$ matrix, we get $A$ matrices $Z_{a}$ , where $a\,\in\,1,\ldots,A$ . These are horizontally stacked and multiplied from the right with a matrix $W_{0}\,\in\,\mathbb{R}^{(A d_{v})\times E}$ , resulting in a matrix $Z\in\mathbb{R}^{N\times E}$ . As before, rows $\vec{z}_{1},\dotsc\dotsc,\vec{z}_{N}$ of $Z$ are then returned.  
 
-**Residual Connections and Normalization.** The inputs $\vec{x}_{j}$ of each multi-head self-attention layer are added to the corresponding outputs $\vec{z}_{j}$ , thus creating a residual connection [21]. This is followed by a layer normalization step [2] but without the division by the standard deviation. [47] found that not dividing by the standard deviation has no significant impact on the performance, but improves certification rates (see Section 6.6). Thus each vector $\vec{v}_{j}=\vec{x}_{j}+\vec{z}_{j}$ is normalized by mapping it to $\vec{v}_{j}\mathrm{~-~}\operatorname{mean}(\vec{v}_{j})$ . This normalized value is then multiplied by a parameter after which a bias is added.  
+**Residual Connections and Normalization.** The inputs $\vec{x}_{j}$ of each multi-head self-attention layer are added to the corresponding outputs $\vec{z}_{j}$ , thus creating a residual connection [21]. This is followed by a layer normalization step [2] but without the division by the standard deviation. [47] found that not dividing by the standard deviation has no significant impact on the performance, but improves certification rates (see Section 6.6). Thus each vector $\vec{v}_{j}=\vec{x}_{j}+\vec{z}_{j}$ is normalized by mapping it to $\vec{v}_{j}\mathrm{~-~}\text{mean}(\vec{v}_{j})$ . This normalized value is then multiplied by a parameter after which a bias is added.  
 
 **Feed-Forward Network.** The normalization is followed by applying the same feed-forward neural network, mapping $\mathbb{R}^{N}$ to $\mathbb{R}^{N}$ , to each of the $N$ output embeddings. This network consists of one hidden ReLU layer of size $H$ (hidden size). Similarly to the Multi-head self-attention, the feed-forward networks are encapsulated with a residual connection, followed by a normalization layer as described above.  
 
@@ -145,24 +145,24 @@ $$
 
 where $c_{k},\beta_{k}^{i}\,\in\,\mathbb{R}$ and $\epsilon_{i}\;\in\;[-1,1]$ . The value $x_{k}$ can deviate from its center coefficient $c_{k}$ through a series of noise symbols $\epsilon_{i}$ scaled by the coefficients $\beta_{k}^{i}$ . The set of noise symbols $\vec{\epsilon}$ is shared among different variables, thus encoding dependencies between $N$ values abstracted by the zonotope.  
 
-**Affine Abstract Transformer.** All affine arithmetic operations such as sums, subtractions or scalings can be applied directly in the abstract Zonotope domain. Since affine arithmetic is exact, the corresponding abstract transformers are optimal. Given two variables $x_{1}\,=\,c_{1}+\vec{\beta}_{1}\cdot\vec{\epsilon}$ and $x_{2}=c_{2}+\overline{{{\beta}}}_{2}\cdot\vec{\epsilon},$ , the abstract transformer for the affine operation $z=a x_{1}+b x_{2}+c$ is  
+**Affine Abstract Transformer.** All affine arithmetic operations such as sums, subtractions or scalings can be applied directly in the abstract Zonotope domain. Since affine arithmetic is exact, the corresponding abstract transformers are optimal. Given two variables $x_{1}=c_{1}+\vec{\beta}_{1}\cdot\vec{\epsilon}$ and $x_{2}=c_{2}+\overline{{{\beta}}}_{2}\cdot\vec{\epsilon}$ , the abstract transformer for the affine operation $z=a x_{1}+b x_{2}+c$ is  
 
 $$
 z=(a c_{1}+b c_{2}+c)+(a\vec{\beta}_{1}+b\vec{\beta}_{2})\cdot\vec{\epsilon}.
 $$  
 
-**ReLU Abstract Transformer.** We leverage the minimal area abstract transformer for the ReLU developed in [49], which is applied element-wise. Concretely, the Zonotope abstract transformer for $\mathrm{ReLU}(x)=\operatorname*{max}(0,x)$ of the zonotope  
+**ReLU Abstract Transformer.** We leverage the minimal area abstract transformer for the ReLU developed in [49], which is applied element-wise. Concretely, the Zonotope abstract transformer for $\mathrm{ReLU}(x)=\text{max}(0,x)$ of the zonotope  
 
 variable $x$ is  
 
 $$
-y=\left\{\!\!\begin{array}{l l}{0,}&{\mathrm{if}\,u<0}\\ {x,}&{\mathrm{if}\,l>0}\\ {\lambda x+\mu+\beta_{\mathrm{new}}\,\epsilon_{\mathrm{new}}}&{\mathrm{otherwise},}\end{array}\right.
+y=\left\lbrace\!\!\begin{array}{l l}{0,}&{\mathrm{if}\,u<0}\\ {x,}&{\mathrm{if}\,l>0}\\ {\lambda x+\mu+\beta_{\mathrm{new}}\,\epsilon_{\mathrm{new}}}&{\mathrm{otherwise},}\end{array}\right.
 $$  
 
 where $l$ and $u$ denote the lower and upper bound of $x$ and  
 
 $$
-\begin{array}{l}{\lambda=u/(u-l)}\\ {\mu=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u).}\end{array}
+\begin{array}{l}{\lambda=u/(u-l)}\\ {\mu=0.5\text{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\text{max}(-\lambda l,(1-\lambda)u).}\end{array}
 $$  
 
 **Certification.** To certify the robustness of a neural network on an input region, we express that region in zonotope form and propagate it through the network using abstract transformers. The resulting output zonotope is an over-approximation of the possible outputs of the network. Given the correct class output $y_{t}$ and the incorrect class output $y_{f}$ , the robustness is proven if the lower bound of $y_{t}-y_{f}$ is positive.  
@@ -172,7 +172,7 @@ $$
 For a given vector $\vec{z}\,\in\,\mathbb R^{N}$ , the dual norm $\|\cdot\|_{p}^{*}$ of the $\ell^{p}$ norm is defined by [43] as:  
 
 $$
-\|\vec{z}\|_{\vec{p}}^{*}=\operatorname*{sup}\{\vec{z}\cdot\vec{x}\mid\vec{x}\in\mathbb{R}^{N},\|\vec{x}\|_{\vec{p}}\leq1\}.
+\|\vec{z}\|_{\vec{p}}^{*}=\text{sup}\{\vec{z}\cdot\vec{x}\mid\vec{x}\in\mathbb{R}^{N},\|\vec{x}\|_{\vec{p}}\leq1\}.
 $$  
 
 Further, [43] shows that $\|\cdot\|_{p}^{*}$ is the $\ell^{q}$ norm with $q$ satisfying the relationship $\textstyle{\frac{1}{p}}+{\frac{1}{q}}=1$ .  
@@ -223,7 +223,7 @@ $$
 Given this, the lower and upper bounds $l_{k}$ and $u_{k}$ of $x_{k}$ are:  
 
 $$
-\begin{array}{r}{l_{k}=c_{k}-\|\vec{\alpha}_{k}\|_{q}+\operatorname*{min}(\vec{\beta}_{k}\cdot\vec{\epsilon})=c_{k}-\|\vec{\alpha}_{k}\|_{q}-\|\vec{\beta}_{k}\|_{1}}\\ {u_{k}=c_{k}+\|\vec{\alpha}_{k}\|_{q}+\operatorname*{max}(\vec{\beta}_{k}\cdot\vec{\epsilon})=c_{k}+\|\vec{\alpha}_{k}\|_{q}+\|\vec{\beta}_{k}\|_{1},}\end{array}
+\begin{array}{r}{l_{k}=c_{k}-\|\vec{\alpha}_{k}\|_{q}+\text{min}(\vec{\beta}_{k}\cdot\vec{\epsilon})=c_{k}-\|\vec{\alpha}_{k}\|_{q}-\|\vec{\beta}_{k}\|_{1}}\\ {u_{k}=c_{k}+\|\vec{\alpha}_{k}\|_{q}+\text{max}(\vec{\beta}_{k}\cdot\vec{\epsilon})=c_{k}+\|\vec{\alpha}_{k}\|_{q}+\|\vec{\beta}_{k}\|_{1},}\end{array}
 $$  
 
 where we applied Lemma 1 on $\Vec{\beta}_{k}$ for the last term.  
@@ -246,7 +246,7 @@ Proof. Follows from the derivation above.
 
 # 4.3 ReLU Abstract Transformer  
 
-The ReLU abstract transformer defined for the classical Zonotope can be extended naturally to the multi-norm setting since it relies only on the lower and upper bounds of the variables, computed as described in Section 4.1. Concretely, the Multi-norm Zonotope abstract transformer for ${\mathrm{ReLU}}(x)=$ $\operatorname*{max}(0,x)$ of the zonotope variable $x$ is  
+The ReLU abstract transformer defined for the classical Zonotope can be extended naturally to the multi-norm setting since it relies only on the lower and upper bounds of the variables, computed as described in Section 4.1. Concretely, the Multi-norm Zonotope abstract transformer for ${\mathrm{ReLU}}(x)=$ $\text{max}(0,x)$ of the zonotope variable $x$ is  
 
 $$
 y=\left\{\!\!\begin{array}{l l}{0,}&{\mathrm{if}\,u<0}\\ {x,}&{\mathrm{if}\,l>0}\\ {\lambda x+\mu+\beta_{\mathrm{new}}\,\epsilon_{\mathrm{new}}}&{\mathrm{otherwise},}\end{array}\right.
@@ -255,14 +255,14 @@ $$
 where $\epsilon_{\mathrm{new}}\,\in\,[-1,1]$ denotes a new noise symbol, $l$ and $u$ denote the lower and upper bound of $x$ and  
 
 $$
-\begin{array}{r}{\lambda=u/(u-l)}\\ {\mu=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\operatorname*{max}(-\lambda l,(1-\lambda)u).}\end{array}
+\begin{array}{r}{\lambda=u/(u-l)}\\ {\mu=0.5\text{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\text{max}(-\lambda l,(1-\lambda)u).}\end{array}
 $$  
 
 We note that the newly introduced noise symbol $\epsilon_{\mathrm{new}}$ is an $\ell^{\infty}$ noise symbol. This holds for all $\epsilon_{\mathrm{new}}$ in the following.  
 
 # 4.4 Tanh Abstract Transformer  
 
-To support the tanh function present in the pooling layer (Figure 2), we extend the abstract transformer for the tanh defined in [49], to the multi-norm setting. As for ReLU, the abstract transformer is applied element-wise. The abstract transformer for the operation $y=\operatorname{tanh}(x)$ is  
+To support the tanh function present in the pooling layer (Figure 2), we extend the abstract transformer for the tanh defined in [49], to the multi-norm setting. As for ReLU, the abstract transformer is applied element-wise. The abstract transformer for the operation $y=\text{tanh}(x)$ is  
 
 $$
 y=\lambda x+\mu+\beta_{\mathrm{new}}\,\epsilon_{\mathrm{new}},
@@ -271,7 +271,7 @@ $$
 where $\epsilon_{\mathrm{new}}\in[-1,1]$ denotes a new noise symbol and  
 
 $$
-\begin{array}{r}{\lambda=\operatorname*{min}(1-\operatorname{tanh}^{2}(l),1-\operatorname{tanh}^{2}(u))}\\ {\mu=\frac{1}{2}(\operatorname{tanh}(u)+\operatorname{tanh}(l)-\lambda(u+l))}\\ {\beta_{\mathrm{new}}=\frac{1}{2}(\operatorname{tanh}(u)-\operatorname{tanh}(l)-\lambda(u-l)).}\end{array}
+\begin{array}{r}{\lambda=\text{min}(1-\text{tanh}^{2}(l),1-\text{tanh}^{2}(u))}\\ {\mu=\frac{1}{2}(\text{tanh}(u)+\text{tanh}(l)-\lambda(u+l))}\\ {\beta_{\mathrm{new}}=\frac{1}{2}(\text{tanh}(u)-\text{tanh}(l)-\lambda(u-l)).}\end{array}
 $$  
 
 # 4.5 Exponential Abstract Transformer  
@@ -291,10 +291,10 @@ $$
 and  
 
 $$
-\begin{array}{r l}&{t_{\mathrm{opt}}=\operatorname*{min}(t_{\mathrm{crit}},t_{\mathrm{crit},2})}\\ &{t_{\mathrm{crit}}=\log(\frac{e^{u}-e^{l}}{u-l})}\\ &{t_{\mathrm{crit},2}=l+1-\hat{\epsilon}.}\end{array}
+\begin{array}{r l}&{t_{\mathrm{opt}}=\text{min}(t_{\mathrm{crit}},t_{\mathrm{crit},2})}\\ &{t_{\mathrm{crit}}=\log(\frac{e^{u}-e^{l}}{u-l})}\\ &{t_{\mathrm{crit},2}=l+1-\hat{\epsilon}.}\end{array}
 $$  
 
-Here, $\hat{\epsilon}$ is a small positive constant value, such as 0.01. The choice $t_{\mathrm{opt}}=\operatorname*{min}(t_{\mathrm{crit}},t_{\mathrm{crit,2}})$ ensures that $y$ is positive.  
+Here, $\hat{\epsilon}$ is a small positive constant value, such as 0.01. The choice $t_{\mathrm{opt}}=\text{min}(t_{\mathrm{crit}},t_{\mathrm{crit,2}})$ ensures that $y$ is positive.  
 
 # 4.6 Reciprocal Abstract Transformer  
 
@@ -313,10 +313,10 @@ $$
 and  
 
 $$
-\begin{array}{r l}&{t_{\mathrm{opt}}=\operatorname*{min}(t_{\mathrm{crit}},t_{\mathrm{crit},2})}\\ &{t_{\mathrm{crit}}=\sqrt{u l}}\\ &{t_{\mathrm{crit},2}=0.5u+\hat{\epsilon}.}\end{array}
+\begin{array}{r l}&{t_{\mathrm{opt}}=\text{min}(t_{\mathrm{crit}},t_{\mathrm{crit},2})}\\ &{t_{\mathrm{crit}}=\sqrt{u l}}\\ &{t_{\mathrm{crit},2}=0.5u+\hat{\epsilon}.}\end{array}
 $$  
 
-Similarly to the exponential transformer, $\hat{\epsilon}$ is a small positive constant and $t_{\mathrm{opt}}=\operatorname*{min}(t_{\mathrm{crit}},t_{\mathrm{crit,2}})$ ensures that $y$ is positive.  
+Similarly to the exponential transformer, $\hat{\epsilon}$ is a small positive constant and $t_{\mathrm{opt}}=\text{min}(t_{\mathrm{crit}},t_{\mathrm{crit,2}})$ ensures that $y$ is positive.  
 
 # 4.7 Soundness and Precision of the Elementwise Abstract Transformers  
 
@@ -481,7 +481,7 @@ Choosing a Value for $\beta_{k}^{\prime}$ . In the equations above, we have one 
 To select $v$ , we opt to minimize the absolute value of the noise symbol coefficients, which acts as a heuristic for the tightness of the zonotope variable:  
 
 $$
-v^{*}=\operatorname*{min}_{v}S=\operatorname*{min}_{v}\left[\|{\vec{\alpha}}^{\prime}\|_{1}+\|{\vec{\beta}}^{\prime}\|_{1}\right].
+v^{*}=\text{min}_{v}S=\text{min}_{v}\left[\|{\vec{\alpha}}^{\prime}\|_{1}+\|{\vec{\beta}}^{\prime}\|_{1}\right].
 $$  
 
 The minimization problem above can be efficiently solved with $O((\mathcal{E}_{p}\!+\!\mathcal{E}_{\infty})\log(\mathcal{E}_{p}\!+\!\mathcal{E}_{\infty}))$ complexity, using a method from [17] described in Appendix A.1. We note that to maintain precision, we disallow solutions that lead to the elimination of one of the $\ell^{p}$ -norm noise symbols $\phi$ .  
@@ -733,7 +733,7 @@ We also demonstrate, for the first time, successful certification for Transforme
 We describe the method from [17] to solve the minimization problem below with $O((\mathcal{E}_{p}+\mathcal{E}_{\infty})\log(\mathcal{E}_{p}+\mathcal{E}_{\infty}))$ complexity:  
 
 $$
-v^{*}=\operatorname*{min}_{v}S=\operatorname*{min}_{v}\left[\sum_{i=1}^{\mathcal{E}_{p}}|\alpha_{z}^{i}|+\sum_{j=1}^{\mathcal{E}_{\infty}}|\beta_{z}^{j}|\right].
+v^{*}=\text{min}_{v}S=\text{min}_{v}\left[\sum_{i=1}^{\mathcal{E}_{p}}|\alpha_{z}^{i}|+\sum_{j=1}^{\mathcal{E}_{\infty}}|\beta_{z}^{j}|\right].
 $$  
 
 [17] relies on two observations. First, since all coefficients in the minimization can be written in form $r+s\beta_{z}^{k}$ with $r,s\in\mathbb{R}$ (see Eqs. 5-6), the expression to be minimized is of the form $\begin{array}{r}{S=\sum_{t}|r_{t}+s_{t}\beta_{z}^{k}|}\end{array}$ . The optimal value $v^{*}$ for $\beta_{z}^{k}$ will cause one of the $|r_{t}+s_{t}\beta_{z}^{k}|$ terms to be 0 and therefore $v^{\ast}$ must equal $\frac{-r_{i}}{s_{i}}$ for some $i\;\in\;[1,\mathcal{E}_{p}+\mathcal{E}_{\infty}]$ . The values $\frac{-r_{i}}{s_{i}}$ are the candidate solutions for the minimization problem and simply testing them all would lead to an algorithm with complexity $O((\mathcal{E}_{p}+\mathcal{E}_{\infty})^{2})$ .  
