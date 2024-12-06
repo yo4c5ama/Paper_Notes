@@ -167,12 +167,16 @@ $$
 
 **Certification.** To certify the robustness of a neural network on an input region, we express that region in zonotope form and propagate it through the network using abstract transformers. The resulting output zonotope is an over-approximation of the possible outputs of the network. Given the correct class output $y_{t}$ and the incorrect class output $y_{f}$ , the robustness is proven if the lower bound of $y_{t}-y_{f}$ is positive.  
 
+> traditional method to handle zonotope abstract domain in affine and ReLU abstract transformer.
+>
+> Something can't understand: $-\lambda l \,\,\,!=\,\,\,(1-\lambda)u$ ?
+
 ## 3.3 Dual Norm  
 
 For a given vector $\vec{z}\,\in\,\mathbb R^{N}$ , the dual norm $\|\cdot\|_{p}^{*}$ of the $\ell^{p}$ norm is defined by [43] as:  
 
 $$
-\|\vec{z}\|_{\vec{p}}^{*}=\text{sup}\{\vec{z}\cdot\vec{x}\mid\vec{x}\in\mathbb{R}^{N},\|\vec{x}\|_{\vec{p}}\leq1\}.
+\|\vec{z}\|_{p}^{*}=\text{sup}\{\vec{z}\cdot\vec{x}\mid\vec{x}\in\mathbb{R}^{N},\|\vec{x}\|_{p}\leq1\}.
 $$  
 
 Further, [43] shows that $\|\cdot\|_{p}^{*}$ is the $\ell^{q}$ norm with $q$ satisfying the relationship $\textstyle{\frac{1}{p}}+{\frac{1}{q}}=1$ .  
@@ -183,16 +187,18 @@ $$
 l_{k}^{q}=-\|\vec{z}\|_{q}\quad u_{k}^{q}=\|\vec{z}\|_{q}.
 $$  
 
-Proof. The proof follows directly from the definition of the dual norm in Equation 3 and the fact that the dual norm of the $\ell^{p}$ norm is the $\ell^{q}$ norm where $\textstyle{\frac{1}{p}}+{\frac{1}{q}}=1$ . The bounds are tight because $\{x\in\mathbb{R}^{N}\mid\|\vec{x}\|_{p}\leq1\}$ is compact and the inner product is continuous, thus the supremum is achieved. □  
-
-![](images/54be01aaeb99f9f543b603b402f74e20bc89295171fe536b2ee9e4a70aa42107.jpg)  
-Figure 4. A Multi-norm zonotope with two variables $x=$ $4\!+\!\phi_{1}\!+\!\phi_{2}\!-\!\epsilon_{1}\!+\!2\epsilon_{2}$ and $\scriptstyle y\;=\;3+\phi_{1}+\phi_{2}+\epsilon_{1}+\epsilon_{2}$ where $\|\vec{\phi}\|_{2}\leq1$ and $\epsilon_{1},\epsilon_{2}~\in~[-1,1]$ . The dark green region indicates the classical zonotope obtained by removing the $\vec{\phi}$ noise symbols.  
+Proof. The proof follows directly from the definition of the dual norm in Equation 3 and the fact that the dual norm of the $\ell^{p}$ norm is the $\ell^{q}$ norm where $\textstyle{\frac{1}{p}}+{\frac{1}{q}}=1$ . The bounds are tight because $\{x\in\mathbb{R}^{N}\mid\|\vec{x}\|_{p}\leq1\}$ is compact and the inner product is continuous, thus the supremum is achieved. 
 
 In the next section, we will leverage Lemma 1 to compute bounds of the variables in our Multi-norm Zonotope domain.  
 
+>这个引理可以用来分析在某种$l^p$范数约束下，一个向量$\vec{x}$与另一个向量$\vec{z}$的内积值的可能范围。
+
 # 4 Multi-Norm Zonotopes  
 
-While $\ell^{\infty}$ perturbations can be naturally expressed with a classical Zonotope, other perturbations such as $\ell^{1}$ or $\ell^{2}$ -norm balls captured by a classical Zonotope would introduce heavy over-approximation. To address this, we introduce the Multinorm Zonotope abstract domain, an extension of the classical Zonotope which in addition to the standard noise symbols $\epsilon_{i}$ , contains noise symbols $\phi_{j}$ , fulfilling the constraint $\|\vec{\phi}\|_{p}\leq1$ , where $\vec{\phi}:=(\phi_{1},\ldots,\phi_{\mathcal{E}_{p}})^{T}$ (Figure 4). If $\boldsymbol{p}=\infty$ , we recover the classical Zonotope. This new domain allows to easily express $\ell^{p}$ -norm bound balls in terms of the new noise symbols $\phi$ :  
+![](images/54be01aaeb99f9f543b603b402f74e20bc89295171fe536b2ee9e4a70aa42107.jpg)  
+Figure 4. A Multi-norm zonotope with two variables $x=$ $4\!+\!\phi_{1}\!+\!\phi_{2}\!-\!\epsilon_{1}\!+\!2\epsilon_{2}$ and $y\;=\;3+\phi_{1}+\phi_{2}+\epsilon_{1}+\epsilon_{2}$ where $\|\vec{\phi}\|_{2}\leq1$ and $\epsilon_{1},\epsilon_{2}~\in~[-1,1]$ . The dark green region indicates the classical zonotope obtained by removing the $\vec{\phi}$ noise symbols.  
+
+While $\ell^{\infty}$ perturbations can be naturally expressed with a classical Zonotope, other perturbations such as $\ell^{1}$ or $\ell^{2}$ -norm balls captured by a classical Zonotope would introduce <mark>heavy over-approximation</mark>. To address this, we introduce the Multinorm Zonotope abstract domain, an extension of the classical Zonotope which in addition to the standard noise symbols $\epsilon_{i}$ , contains noise symbols $\phi_{j}$ , fulfilling the constraint $\|\vec{\phi}\|_{p}\leq1$ , where $\vec{\phi}:=(\phi_{1},\ldots,\phi_{\mathcal{E}_{p}})^{T}$ (Figure 4). If $\boldsymbol{p}=\infty$ , we recover the classical Zonotope. This new domain allows to easily express $\ell^{p}$ -norm bound balls in terms of the new noise symbols $\phi$ :  
 
 $$
 x_{k}=c_{k}+\sum_{i=1}^{\mathcal{E}_{p}}\alpha_{k}^{i}\phi_{i}+\sum_{j=1}^{\mathcal{E}_{\infty}}\beta_{k}^{j}\epsilon_{j}=c_{k}+\vec{\alpha}_{k}\cdot\vec{\phi}+\vec{\beta}_{k}\cdot\vec{\epsilon},
@@ -226,15 +232,15 @@ $$
 \begin{array}{r}{l_{k}=c_{k}-\|\vec{\alpha}_{k}\|_{q}+\text{min}(\vec{\beta}_{k}\cdot\vec{\epsilon})=c_{k}-\|\vec{\alpha}_{k}\|_{q}-\|\vec{\beta}_{k}\|_{1}}\\ {u_{k}=c_{k}+\|\vec{\alpha}_{k}\|_{q}+\text{max}(\vec{\beta}_{k}\cdot\vec{\epsilon})=c_{k}+\|\vec{\alpha}_{k}\|_{q}+\|\vec{\beta}_{k}\|_{1},}\end{array}
 $$  
 
-where we applied Lemma 1 on $\Vec{\beta}_{k}$ for the last term.  
+where we applied Lemma 1 on $\vec{\beta}_{k}$ for the last term.  
 
-Theorem 1. For all $k$ , $l_{k}$ and $u_{k}$ are sound and tight bounds of the Multi-norm Zonotope variable $x_{k}$ .  
+**Theorem 1.** *For all $k$ , $l_{k}$ and $u_{k}$ are sound and tight bounds of the Multi-norm Zonotope variable $x_{k}$ .* 
 
-Proof. From the derivation above and the fact that $\vec{\alpha}_{k}\cdot\vec{\phi}$ and $\Vec{\beta}_{k}\cdot\Vec{\epsilon}$ are independent follows that $l_{k}$ and $u_{k}$ are sound and tight bounds for $x_{k}$ . □  
+Proof. From the derivation above and the fact that $\vec{\alpha}_{k}\cdot\vec{\phi}$ and $\vec{\beta}_{k}\cdot\vec{\epsilon}$ are independent follows that $l_{k}$ and $u_{k}$ are sound and tight bounds for $x_{k}$ . □  
 
 # 4.2 Affine Abstract Transformer  
 
-The abstract transformer for an affine combination $z=a x_{1}+b x_{2}+c$ of two Multi-norm Zonotope variables $x_{1}=c_{1}+\vec{\alpha}_{1}\cdot\vec{\phi}+\vec{\beta}_{1}\cdot\vec{\epsilon}$ and $x_{2}=c_{2}+\vec{\alpha}_{2}\cdot\vec{\phi}+\vec{\beta}_{2}^{\^}\cdot\vec{\epsilon},$ , is  
+The abstract transformer for an affine combination $z=a x_{1}+b x_{2}+c$ of two Multi-norm Zonotope variables $x_{1}=c_{1}+\vec{\alpha}_{1}\cdot\vec{\phi}+\vec{\beta}_{1}\cdot\vec{\epsilon}$ and $x_{2}=c_{2}+\vec{\alpha}_{2}\cdot\vec{\phi}+\vec{\beta}_{2}\cdot\vec{\epsilon}$ , is  
 
 $$
 \begin{array}{l}{{z=a x_{1}+b x_{2}+c}}\\ {{\ \ =a(c_{1}+\vec{\alpha}_{1}\cdot\vec{\phi}+\vec{\beta}_{1}\cdot\vec{\epsilon})+b(c_{2}+\vec{\alpha}_{2}\cdot\vec{\phi}+\vec{\beta}_{2}\cdot\vec{\epsilon})+c}}\\ {{\ \ =\left(a c_{1}+b c_{2}+c\right)+\left(a\vec{\alpha}_{1}+b\vec{\alpha}_{2}\right)\cdot\vec{\phi}+\left(a\vec{\beta}_{1}+b\vec{\beta}_{2}\right)\cdot\vec{\epsilon}.}}\end{array}
@@ -255,10 +261,12 @@ $$
 where $\epsilon_{\mathrm{new}}\,\in\,[-1,1]$ denotes a new noise symbol, $l$ and $u$ denote the lower and upper bound of $x$ and  
 
 $$
-\begin{array}{r}{\lambda=u/(u-l)}\\ {\mu=0.5\text{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\text{max}(-\lambda l,(1-\lambda)u).}\end{array}
+\begin{array}{l}{\lambda=u/(u-l)}\\ {\mu=0.5\text{max}(-\lambda l,(1-\lambda)u)}\\ {\beta_{\mathrm{new}}=0.5\text{max}(-\lambda l,(1-\lambda)u).}\end{array}
 $$  
 
 We note that the newly introduced noise symbol $\epsilon_{\mathrm{new}}$ is an $\ell^{\infty}$ noise symbol. This holds for all $\epsilon_{\mathrm{new}}$ in the following.  
+
+> same with traditional zonotope. It's just how to handel with ReLU, no need to add $\vec{\phi}$
 
 # 4.4 Tanh Abstract Transformer  
 
@@ -307,7 +315,7 @@ $$
 where $\epsilon_{\mathrm{new}}\in[-1,1]$ denotes a new noise symbol and  
 
 $$
-\begin{array}{r}{\lambda=-\frac{1}{t_{\mathrm{opt}}^{2}}}\\ {\mu=0.5(\frac{1}{t_{\mathrm{opt}}}-\lambda\cdot t_{\mathrm{opt}}+\frac{1}{l}-\lambda l)}\\ {\beta_{\mathrm{new}}=0.5(\lambda\cdot t_{\mathrm{opt}}-\frac{1}{t_{\mathrm{opt}}}+\frac{1}{l}-\lambda l)}\end{array}
+\begin{array}{l}{\lambda=-\frac{1}{t_{\mathrm{opt}}^{2}}}\\ {\mu=0.5(\frac{1}{t_{\mathrm{opt}}}-\lambda\cdot t_{\mathrm{opt}}+\frac{1}{l}-\lambda l)}\\ {\beta_{\mathrm{new}}=0.5(\lambda\cdot t_{\mathrm{opt}}-\frac{1}{t_{\mathrm{opt}}}+\frac{1}{l}-\lambda l)}\end{array}
 $$  
 
 and  
@@ -329,7 +337,6 @@ Our Multi-norm Zonotope transformers use the same functional form for the Multi-
 # 4.8 Dot Product Abstract Transformer  
 
 Next, we define the abstract transformer for the dot product between pairs of vectors of variables of a Multi-norm Zonotope. The transformer is used in the multi-head self-attention, more specifically in the matrix multiplications between $\boldsymbol{Q}$ and $K$ and between the result of the softmax and $V$ (Figure  
-
 3). Note that the dot product transformer is required here because both operands of our matrix multiplications are represented as a part of the zonotope. This is in contrast to the matrix multiplications we have in an affine layer for example, where only one of the matrices is part of the zonotope.  
 
 The standard dot product for two vectors $\vec{v}_{1},\vec{v}_{2}\in\mathbb{R}^{N}$ is given by 𝑦= 𝑣 1 · 𝑣 2 = 𝑘𝑁=1 𝑣1𝑘𝑣 .k..k . Computing the dot product between two Multi-norm Zonotope vectors sharing error terms $\vec{v_{1}}=\vec{c}_{1}+A_{1}\vec{\phi}+B_{1}\vec{\epsilon}$ and $\vec{v}_{2}=\overline{{{c}}}_{2}+A_{2}\vec{\phi}+B_{2}\vec{\epsilon}$ produces the output variable $y$ :  
