@@ -338,14 +338,15 @@ Our Multi-norm Zonotope transformers use the same functional form for the Multi-
 
 Next, we define the abstract transformer for the dot product between pairs of vectors of variables of a Multi-norm Zonotope. The transformer is used in the multi-head self-attention, more specifically in the matrix multiplications between $\boldsymbol{Q}$ and $K$ and between the result of the softmax and $V$ (Figure  
 3). Note that the dot product transformer is required here because both operands of our matrix multiplications are represented as a part of the zonotope. This is in contrast to the matrix multiplications we have in an affine layer for example, where only one of the matrices is part of the zonotope.  
-
-The standard dot product for two vectors $\vec{v}_{1},\vec{v}_{2}\in\mathbb{R}^{N}$ is given by 𝑦= 𝑣 1 · 𝑣 2 = 𝑘𝑁=1 𝑣1𝑘𝑣 .k..k . Computing the dot product between two Multi-norm Zonotope vectors sharing error terms $\vec{v_{1}}=\vec{c}_{1}+A_{1}\vec{\phi}+B_{1}\vec{\epsilon}$ and $\vec{v}_{2}=\overline{{{c}}}_{2}+A_{2}\vec{\phi}+B_{2}\vec{\epsilon}$ produces the output variable $y$ :  
+The standard dot product for two vectors $\vec{v}_{1},\vec{v}_{2}\in\mathbb{R}^{N}$ is given by $y = \vec{v_1}\cdot\vec{v_2}=\sum_{k=1}^{N}{v_1^k v_2^k}$. Computing the dot product between two Multi-norm Zonotope vectors sharing error terms $\vec{v_{1}}=\vec{c}_{1}+A_{1}\vec{\phi}+B_{1}\vec{\epsilon}$ and $\vec{v}_{2}=\overline{{{c}}}_{2}+A_{2}\vec{\phi}+B_{2}\vec{\epsilon}$ produces the output variable $y$ :  
 
 $$
 \begin{array}{r l}&{y=\vec{v_{1}}\cdot\vec{v_{2}}=(\vec{c}_{1}+A_{1}\vec{\phi}+B_{1}\vec{\epsilon})\cdot(\vec{c}_{2}+A_{2}\vec{\phi}+B_{2}\vec{\epsilon})}\\ &{\quad=\vec{c}_{1}\cdot\vec{c}_{2}+(\vec{c}_{1}^{\top}A_{2}+\vec{c}_{2}^{\top}A_{1})\vec{\phi}+(\vec{c}_{1}^{\top}B_{2}+\vec{c}_{2}^{\top}B_{1}^{\top})\vec{\epsilon}}\\ &{\quad+\,(A_{1}\vec{\phi}+B_{1}\vec{\epsilon})\cdot(A_{2}\vec{\phi}+B_{2}\vec{\epsilon}).}\end{array}
 $$  
 
-Next, we focus on the last term of this expression, representing interaction between noise symbols, as this term is not in the functional form of a Multi-norm Zonotope. We first expand the last term and get  
+> 第一项是准确的，无需上下界。二三项是有范围的，上下界是系数的对偶范数（dual norm）。因此只需要确定最后一项的范围。
+
+Next, we focus on <mark>the last term of this expression</mark>, representing interaction between noise symbols, as this term is not in the functional form of a Multi-norm Zonotope. We first expand the last term and get  
 
 $$
 \begin{array}{r}{(A_{1}\vec{\phi}+B_{1}\vec{\epsilon})\cdot(A_{2}\vec{\phi}+B_{2}\vec{\epsilon})=(A_{1}\vec{\phi})\cdot(A_{2}\vec{\phi})+(A_{1}\vec{\phi})\cdot(B_{2}\vec{\epsilon})}\\ {+\ (B_{1}\vec{\epsilon})\cdot(A_{2}\vec{\phi})+(B_{1}\vec{\epsilon})\cdot(B_{2}\vec{\epsilon}).}\end{array}
@@ -361,7 +362,7 @@ binds the whole term $l\leq\big(A_{1}\vec{\phi}+B_{1}\vec{\epsilon}\big)\cdot\bi
 
 Next, we show a general method to compute the interval bounds for each of the 4 cases. For the $\epsilon{,}\epsilon{-}\mathrm{case}$ , we additionally present a second variant for the computation which is slower but more precise.  
 
-Fast Bounds $l_{\gamma,\delta},\,u_{\gamma,\delta}$ (DeepT-Fast). To showcase the method, we calculate interval bounds for the generic expression $(V\vec{\xi}_{p_{1}})\cdot(W\vec{\xi}_{p_{2}})$ , where $V$ and $W$ are matrices such that $V\vec{\xi}_{p_{1}}$ and $W_{5p_{2}}^{\vec{\xi}}$ have the same dimension and $\|\vec{\xi}_{p_{1}}\|_{p_{1}}\leq\,1$ and $\|\vec{\xi}_{p_{2}}\|_{p_{2}}\leq1$ . We do this by computing an upper bound for the absolute value  
+**Fast Bounds $l_{\gamma,\delta},\,u_{\gamma,\delta}$ (DeepT-Fast).** To showcase the method, we calculate interval bounds for the generic expression $(V\vec{\xi}_{p_{1}})\cdot(W\vec{\xi}_{p_{2}})$ , where $V$ and $W$ are matrices such that $V\vec{\xi}_{p_{1}}$ and $W_{5p_{2}}^{\vec{\xi}}$ have the same dimension and $\|\vec{\xi}_{p_{1}}\|_{p_{1}}\leq\,1$ and $\|\vec{\xi}_{p_{2}}\|_{p_{2}}\leq1$ . We do this by computing an upper bound for the absolute value  
 
 $$
 |(V\vec{\xi}_{p_{1}})\cdot(W\vec{\xi}_{p_{2}})|=|\vec{\xi}_{p_{1}}^{T}V^{T}W\vec{\xi}_{p_{2}}|\leq|\vec{\xi}_{p_{1}}^{T}V^{T}||W\vec{\xi}_{p_{2}}|,
