@@ -218,7 +218,7 @@ $$
 
 where $A_{k,i}=\alpha_{k}^{i}$ and $B_{k,j}=\beta_{k}^{j}$ . In the rest of the section, we describe how to compute the concrete bounds of the Multinorm zonotope and present Multi-norm Zonotope abstract transformers for all operations of the Transformer network (Figures 2 and 3). We extend the existing abstract Zonotope transformers [49] to our Multi-norm Zonotope domain and describe new and efficient abstract transformers for the dot product and the softmax function. To support softmax, we describe the abstract transformers for the exponential and the reciprocal. Further, we prove soundness of our abstract transformers and show that the Relu, Tanh, Exponential and Reciprocal transformers are optimal with respect to the area of the corresponding input-output transformer spaces.  
 
-# 4.1 Computing Concrete Upper and Lower Bounds  
+## 4.1 Computing Concrete Upper and Lower Bounds  
 
 The lower and upper interval bounds of each variable $x_{k}$ of a Multi-norm Zonotope $\vec{x}$ can be obtained by leveraging Lemma 1 to compute the bounds of $\vec{\alpha}_{k}\cdot\vec{\phi}$ :  
 
@@ -238,7 +238,7 @@ where we applied Lemma 1 on $\vec{\beta}_{k}$ for the last term.
 
 Proof. From the derivation above and the fact that $\vec{\alpha}_{k}\cdot\vec{\phi}$ and $\vec{\beta}_{k}\cdot\vec{\epsilon}$ are independent follows that $l_{k}$ and $u_{k}$ are sound and tight bounds for $x_{k}$ . □  
 
-# 4.2 Affine Abstract Transformer  
+## 4.2 Affine Abstract Transformer  
 
 The abstract transformer for an affine combination $z=a x_{1}+b x_{2}+c$ of two Multi-norm Zonotope variables $x_{1}=c_{1}+\vec{\alpha}_{1}\cdot\vec{\phi}+\vec{\beta}_{1}\cdot\vec{\epsilon}$ and $x_{2}=c_{2}+\vec{\alpha}_{2}\cdot\vec{\phi}+\vec{\beta}_{2}\cdot\vec{\epsilon}$ , is  
 
@@ -250,7 +250,7 @@ Theorem 2. The affine transformer for the Multi-norm Zonotope domain is exact.
 
 Proof. Follows from the derivation above.  
 
-# 4.3 ReLU Abstract Transformer  
+## 4.3 ReLU Abstract Transformer  
 
 The ReLU abstract transformer defined for the classical Zonotope can be extended naturally to the multi-norm setting since it relies only on the lower and upper bounds of the variables, computed as described in Section 4.1. Concretely, the Multi-norm Zonotope abstract transformer for ${\mathrm{ReLU}}(x)=$ $\text{max}(0,x)$ of the zonotope variable $x$ is  
 
@@ -268,7 +268,7 @@ We note that the newly introduced noise symbol $\epsilon_{\mathrm{new}}$ is an $
 
 > same with traditional zonotope. It's just how to handel with ReLU, no need to add $\vec{\phi}$
 
-# 4.4 Tanh Abstract Transformer  
+## 4.4 Tanh Abstract Transformer  
 
 To support the tanh function present in the pooling layer (Figure 2), we extend the abstract transformer for the tanh defined in [49], to the multi-norm setting. As for ReLU, the abstract transformer is applied element-wise. The abstract transformer for the operation $y=\text{tanh}(x)$ is  
 
@@ -282,7 +282,7 @@ $$
 \begin{array}{r}{\lambda=\text{min}(1-\text{tanh}^{2}(l),1-\text{tanh}^{2}(u))}\\ {\mu=\frac{1}{2}(\text{tanh}(u)+\text{tanh}(l)-\lambda(u+l))}\\ {\beta_{\mathrm{new}}=\frac{1}{2}(\text{tanh}(u)-\text{tanh}(l)-\lambda(u-l)).}\end{array}
 $$  
 
-# 4.5 Exponential Abstract Transformer  
+## 4.5 Exponential Abstract Transformer  
 
 Since the softmax function $\sigma$ requires the exponential, we rely on the framework setup in [41] to define the abstract transformer for the exponential function that minimizes the area of the output zonotope and ensures its lower bound is positive, which is required by the reciprocal abstract transformer that will be applied afterward. As described in the paper, the operation $y\,=\,e^{x}$ can be modeled through the element-wise abstract transformer  
 
@@ -304,7 +304,7 @@ $$
 
 Here, $\hat{\epsilon}$ is a small positive constant value, such as 0.01. The choice $t_{\mathrm{opt}}=\text{min}(t_{\mathrm{crit}},t_{\mathrm{crit,2}})$ ensures that $y$ is positive.  
 
-# 4.6 Reciprocal Abstract Transformer  
+## 4.6 Reciprocal Abstract Transformer  
 
 To obtain the minimal area abstract transformer for the reciprocal function, which is required for the softmax, we instantiate the equations specified in [41] for that particular function. We note that the algorithm is applicable because the reciprocal function is convex for positive inputs and we are only required to define our transformer for positive inputs due to the softmax structure. The abstract transformer for $\begin{array}{r}{y=\frac{1}{x}}\end{array}$ with $x>0$ is given by  
 
@@ -326,7 +326,7 @@ $$
 
 Similarly to the exponential transformer, $\hat{\epsilon}$ is a small positive constant and $t_{\mathrm{opt}}=\text{min}(t_{\mathrm{crit}},t_{\mathrm{crit,2}})$ ensures that $y$ is positive.  
 
-# 4.7 Soundness and Precision of the Elementwise Abstract Transformers  
+## 4.7 Soundness and Precision of the Elementwise Abstract Transformers  
 
 Theorem 3. The Multi-norm Zonotope abstract transformers for ReLU, tanh, exponential and reciprocal are sound and optimal in terms of their area in input-output space.  
 
@@ -334,7 +334,7 @@ Proof. As outlined in Section 4.3-4.6, all of our elementwise abstract transform
 
 Our Multi-norm Zonotope transformers use the same functional form for the Multi-norm Zonotope output variable $y=\lambda x+\mu+\beta_{\mathrm{new}}\epsilon_{\mathrm{new}}$ , where as before $\epsilon_{\mathrm{new}}$ is a new $\ell^{\infty}$ noise symbol. Further, for our Multi-norm Zonotopes, the bounds $l$ and $u$ are also sound and precise (Theorem 1) and the affine transformer is also exact (Theorem 2). Since $\lambda,\mu$ and $\beta_{\mathrm{new}}$ depend only on the bounds $l$ and $u$ and the underlying function, the proofs in [41, 49] transfer directly to our setting. Thus, our abstract transformers are also sound and optimal in terms of the area in input-output space. □  
 
-# 4.8 Dot Product Abstract Transformer  
+## 4.8 Dot Product Abstract Transformer  
 
 Next, we define the abstract transformer for the dot product between pairs of vectors of variables of a Multi-norm Zonotope. The transformer is used in the multi-head self-attention, more specifically in the matrix multiplications between $\boldsymbol{Q}$ and $K$ and between the result of the softmax and $V$ (Figure  
 3). Note that the dot product transformer is required here because both operands of our matrix multiplications are represented as a part of the zonotope. This is in contrast to the matrix multiplications we have in an affine layer for example, where only one of the matrices is part of the zonotope.  
@@ -373,7 +373,22 @@ where $\big|\cdot\big|$ denotes either the absolute value for scalars or the ele
 We use Lemma 1 to bind the elements $|\vec{w}_{j}\cdot\vec{\xi}_{p_{2}}|$ of the vector $|W\vec{\xi}_{p_{2}}|$ , where $\vec{w}_{j}$ denotes the $j^{\mathrm{th}}$ row of $W$ and $\ell^{q_{2}}$ is the dual norm of $\ell^{p_{2}}$ . We obtain  
 
 $$
-\begin{array}{r}{|(V_{\xi_{p_{1}}}^{\vec{\xi}})\cdot(W_{\xi_{p_{2}}}^{\vec{\xi}})|\le|\vec{\xi}_{p_{1}}^{T}V^{T}|\left(\begin{array}{c}{|\vec{w}_{1}\cdot\vec{\xi}_{p_{2}}|}\\ {\vdots}\\ {|\vec{w}_{N}\cdot\vec{\xi}_{p_{2}}|}\end{array}\right)\le|\vec{\xi}_{p_{1}}^{T}V^{T}|\left(\begin{array}{c}{\|\vec{w}_{1}\|_{q_{2}}}\\ {\vdots}\\ {\|\vec{w}_{N}^{\vec{\dot{\}}}\|_{q_{2}}}\end{array}\right).}\end{array}
+\begin{aligned}
+&\left| \left( V_{\xi_{p_{1}}}^{\vec{\xi}} \right) \cdot \left( W_{\xi_{p_{2}}}^{\vec{\xi}} \right) \right| \leq 
+\left| \vec{\xi}_{p_{1}}^{T} V^{T} \right| 
+\begin{pmatrix}
+\left| \vec{w}_{1} \cdot \vec{\xi}_{p_{2}} \right| \\ 
+\vdots \\ 
+\left| \vec{w}_{N} \cdot \vec{\xi}_{p_{2}} \right|
+\end{pmatrix}
+\leq 
+\left| \vec{\xi}_{p_{1}}^{T} V^{T} \right| 
+\begin{pmatrix}
+\|\vec{w}_{1}\|_{q_{2}} \\ 
+\vdots \\ 
+\|\vec{w}_{N}\|_{q_{2}}
+\end{pmatrix}.
+\end{aligned}
 $$  
 
 We further bind the last term in the inequality  
@@ -382,7 +397,7 @@ $$
 |\vec{\xi}_{p_{1}}^{T}V^{T}|\left(\begin{array}{l}{\Vert\vec{w}_{1}\Vert_{q_{2}}}\\ {\vdots}\\ {\Vert\vec{w}_{N}^{\,\cdot}\Vert_{q_{2}}}\end{array}\right)=\left(\begin{array}{l}{\Vert\vec{w}_{1}\Vert_{q_{2}}}\\ {\vdots}\\ {\Vert\vec{w}_{N}^{\,\cdot}\Vert_{q_{2}}}\end{array}\right)^{T}\lvert V\vec{\xi}_{p_{1}}\rvert\leq\left(\begin{array}{l}{\Vert\vec{w}_{1}\Vert_{q_{2}}}\\ {\vdots}\\ {\Vert\vec{w}_{N}^{\,\cdot}\Vert_{q_{2}}}\end{array}\right)^{T}\lvert V\rvert\lvert\vec{\xi}_{p_{1}}\rvert.
 $$  
 
-As befor e, we ca n us e Lemm a 1 to bind  the rem aining expression, which leaves us with  
+As before, we can use Lemma 1 to bind the rem aining expression, which leaves us with  
 
 $$
 |(V\vec{\xi}_{p_{1}})\cdot(W\vec{\xi}_{p_{2}})|\leq\left\|\left(\begin{array}{c}{||\vec{w}_{1}||_{q_{2}}}\\ {\vdots}\\ {||\vec{w}_{N}^{\,}||_{q_{2}}}\end{array}\right)^{T}|V|\right\|_{q_{1}},
@@ -392,11 +407,11 @@ where $\ell^{q_{1}}$ is the dual norm of $\ell^{p_{1}}$
 
 The complexity to compute this bound is $O(N(\mathcal{E}_{p}+\mathcal{E}_{\infty}))$ . As the final bound is not symmetric in $W$ and $V$ , a natural question arises, whether it is better to apply the dual norm trick the other way round. Our experiments show, neither order is strictly better than the other, but on average it is advantageous to apply the dual norm trick first on the $\ell^{\infty}$ -norm terms and then on the $\ell^{p}$ -norm terms (see section 6.5).  
 
-Theorem 4. The Fast variant of dot-product abstract transformers of the Multi-norm Zonotope is sound.  
+**Theorem 4.** The Fast variant of dot-product abstract transformers of the Multi-norm Zonotope is sound.  
 
-Proof. The derivation of Equation 5 above demonstrates that the computed bound is indeed a sound upper bound of $\vec{v}_{1}\cdot\vec{v}_{2}$ , the derivation for the lower bound is analogous. □  
+*Proof.* The derivation of Equation 5 above demonstrates that the computed bound is indeed a sound upper bound of $\vec{v}_{1}\cdot\vec{v}_{2}$ , the derivation for the lower bound is analogous. □  
 
-More Precise Bounds $l_{\epsilon,\epsilon}$ , $u_{\epsilon,\epsilon}$ (DeepT-Precise). In the case where our Multi-norm Zonotope has solely $\ell^{\infty}$ noise symbols $(p_{1}\,=\,p_{2}\,=\,\infty)$ ), that is 𝑝1 = 𝜉 𝑝2 = 𝜖 , a tighter approximation using interval analysis can be achieved at the cost of increasing the computational complexity to $O(N{\mathcal{E}_{\infty}}^{2})$ using a method inspired by [19]. We begin by summing coefficients related to each pair of noise symbols.  
+**More Precise Bounds $l_{\epsilon,\epsilon}$ , $u_{\epsilon,\epsilon}$ (DeepT-Precise).** In the case where our Multi-norm Zonotope has solely $\ell^{\infty}$ noise symbols $(p_{1}\,=\,p_{2}\,=\,\infty)$ ), that is 𝑝1 = 𝜉 𝑝2 = 𝜖 , a tighter approximation using interval analysis can be achieved at the cost of increasing the computational complexity to $O(N{\mathcal{E}_{\infty}}^{2})$ using a method inspired by [19]. We begin by summing coefficients related to each pair of noise symbols.  
 
 $$
 (V\vec{\epsilon})\cdot(W\vec{\epsilon})=\sum_{i=1}^{\mathcal{E}_{\infty}}\sum_{j=1}^{\mathcal{E}_{\infty}}(\vec{v}_{i}\cdot\vec{w}_{j})\epsilon_{i}\epsilon_{j},
@@ -422,7 +437,7 @@ Proof. The derivation of Equation 6 shows that $l_{\epsilon,\epsilon}$ and $u_{\
 
 We note that DeepT-Fast and DeepT-Precise can be combined: DeepT-Fast can be used to compute the bounds for the mixed terms $(l_{\phi,\phi},u_{\phi,\phi})$ , $(l_{\phi,\epsilon},u_{\phi,\epsilon})$ and $(l_{\epsilon,\phi},u_{\epsilon,\phi})$ , while DeepT-Precise can be used to compute $(l_{\epsilon,\epsilon},u_{\epsilon,\epsilon})$ . We leave empirical evaluation of this variant for future work.  
 
-# 4.9 Multiplication Abstract Transformer  
+## 4.9 Multiplication Abstract Transformer  
 
 The multiplication abstract transformer is a special case of the dot-product abstract transformer where the vectors have only one element.  
 
@@ -430,7 +445,7 @@ The multiplication abstract transformer is a special case of the dot-product abs
 
 While our Multi-norm Zonotope transformers described so far could be directly implemented and applied in a straight forward manner, this would not scale to larger networks, and the accumulated overapproximation would reduce overall verification precision. In this section we introduce several techniques that improve the scalability and precision of our abstract transformers, enhancing their practical effectiveness: In Section 5.1, we improve performance and lower memory usage by periodically reducing the number of noise symbols, in Section 5.2, we reduce the loss of precision that occurs during softmax by using an alternative but equivalent softmax definition whose abstract transformer is more precise, and in Section 5.3 we improve precision by introducing the constraint that softmax output values need to sum to 1, ensuring the output variables form a normalized distribution. Finally, in Section 5.4, we discuss the differences between DeepT and the related work.  
 
-# 5.1 Noise Symbol Reduction  
+## 5.1 Noise Symbol Reduction  
 
 Through the repeated application of abstract transformers during verification, the number of $\ell^{\infty}$ noise symbols grows, leading to slower verification and higher memory usage. In fact, every abstract transformer we use, except the one for affine transformations, can yield new noise symbols $\epsilon_{\mathrm{new}}$ . To address this, we periodically reduce the number of $\ell^{\infty}$ noise symbols to ensure an upper bound on the memory usage independent of the network depth, thus creating a tunable tradeoff between precision and speed.  
 
@@ -444,7 +459,7 @@ $$
 
 The Transformer network has residual connections in each Transfomer layer, each combining two different branches of the neural network. Noise symbol reduction is applied to the input embeddings of every Transformer layer, just before the residual connection around the multi-head selfattention, avoiding the complexities of handling separate noise reductions in two branches.  
 
-# 5.2 Softmax Abstract Transformer  
+## 5.2 Softmax Abstract Transformer  
 
 The softmax function $\sigma$ is a key operation in the self-attention (Figure 3). While the transformers for exponential, sum, reciprocal and multiplication can be used to construct a transformer for the softmax directly, we rewrite the softmax to:  
 
@@ -454,7 +469,7 @@ $$
 
 It is well known that the latter formula is a more numerically stable way of computing the softmax function. We find it is also beneficial for defining our abstract transformers: First, the noise symbols in $\nu_{i}$ can cancel with the ones in $\nu_{j}$ , which reduces the overapproximation introduced through the abstract transformer for the exponential function (it gets worse the larger the inputs are). Second, we do not need the multiplication abstract transformer. Further, this method ensures that the output is always between 0 and 1, as the denominator is always positive and greater than 1.  
 
-# 5.3 Softmax Sum Zonotope Refinement  
+## 5.3 Softmax Sum Zonotope Refinement  
 
 By construction, the outputs $y_{1},\dots,y_{N}$ of the softmax function $\sigma$ when applied to inputs $x_{1},\ldots,x_{N}$ satisfy $\textstyle\sum_{i=1}^{N}y_{i}=1$ , i.e. they form a probability distribution. Thus, in the multihead self-attention, the role of the softmax is to pick some convex combination of the values $V$ , according to the similarity between the query and the keys.  
 
@@ -464,7 +479,7 @@ We leverage Zonotope constraint methods [17], which produce refined Zonotopes gi
 
 1. computing a refined variable $y_{1}^{\prime}$ by imposing the equality constraint $y_{1}=1-\left(y_{2}+\cdot\cdot\cdot+y_{N}\right)$ , 2. refining all other variables $y_{2},\dots,y_{N}$ to $y_{2}^{\prime},\dots,y_{N}^{\prime}$ ,  
 
-3. tightening the bounds of the $\epsilon_{i}$ ’s to a subset of $[-1,1]$ . Note that we arbitrarily select $y_{1}$ as the variable to be refined first, but any other variable could have been chosen.  
+2. tightening the bounds of the $\epsilon_{i}$ ’s to a subset of $[-1,1]$ . Note that we arbitrarily select $y_{1}$ as the variable to be refined first, but any other variable could have been chosen.  
 
 We now detail these three steps that lead to a refined Zonotope $Z^{\prime}$ with variables $y_{1}^{\prime},\ldots,y_{n}^{\prime}$ that always sum to 1 and have tighter error bounds.  
 
@@ -510,7 +525,7 @@ $$
 
 Note that because the noise symbol reduction process assumes all noise symbols $\vec{\epsilon}$ have range $[-1,1]$ , prior to it a pre-processing step occurs where all noise symbols $\epsilon_{m}$ with tightened bounds $[a_{m},b_{m}]\subset[-1,1]$ are re-written as $\begin{array}{r}{\epsilon_{m}=\frac{\bar{a_{m}}+b_{m}}{2}+\frac{b_{m}-a_{m}}{2}\epsilon_{\mathrm{new},m}}\end{array}$ 𝑏𝑚−2𝑎𝑚𝜖new,𝑚with 𝜖new,𝑚∈[−1, 1].  
 
-# 5.4 Discussion  
+## 5.4 Discussion  
 
 Next, we discuss the differences between DeepT-Fast and DeepT-Precise with CROWN-BaF and CROWN-Backward from [47], respectively.  
 
@@ -537,7 +552,7 @@ We focus on the threat models T1 and in Section 6.7 we focus on T2. We do not ha
 
 In Appendix A.2, we investigate the performance of our Multi-norm Zonotope against ℓ norm bound attacks on a small fully-connected network trained on MNIST [28] and compare it with [24]. Further, in Appendix A.3, we evaluate the performance of our certification methods on Transformer networks classifying MNIST images. An ablation study for the softmax refinement is given in Appendix A.5 and results for an approach combining DeepT-Fast and DeepT-Precise are given in Appendix A.6.  
 
-# 6.1 Experimental Setup  
+## 6.1 Experimental Setup  
 
 We evaluate the certification ability, performance and scalability of our approaches by verifying Transformer networks of different sizes against perturbations of norm $p\in\{1,2,\infty\}$ . We evaluate two variants of our verifier:  
 
@@ -561,7 +576,7 @@ Table 2. Certified radius (min and avg), time (in seconds) and ratio of the aver
 
 ![](images/9623e89284b0219dd50d42fbf60f3e647c859b482f744b62361b99f289640b67.jpg)  
 
-# 6.2 Fast Verifiers: DeepT-Fast vs CROWN-BaF  
+## 6.2 Fast Verifiers: DeepT-Fast vs CROWN-BaF  
 
 First, we compare our tool for fast verification DeepT-Fast against CROWN-BaF, the tool for fast verification in [47]. The metrics used include the size of the certified radius, the scaling behavior and the performance. To the best of our knowledge, this is the first time verification is applied on more realistically-sized Transformer networks, with 6 and 12 layers [9]; the previous maximum was 3 layers [47]. The accuracies for the 3, 6 and 12 layer networks are $83.3\%$ , $83.6\%$ and $83.4\%$ respectively on the SST dataset (Table 1) and $91.4\%$ , $91.5\%$ and $91.5\%$ respectively on the Yelp dataset (Table 2).  
 
@@ -581,7 +596,7 @@ Large Width Transformer Network Results. To evaluate the performance on wider Tr
 
 Due to memory issues, CROWN-BaF failed to verify anything for the wider 12 layer Transformer network. DeepTFast, on the other hand, succeeded due to its tunable noise symbol reduction, allowing for fine-grained tradeoffs between precision and memory usage. The results are in agreement with the previous observations.  
 
-# 6.3 The Precision-Performance Tradeof  
+## 6.3 The Precision-Performance Tradeof  
 
 To compare the two variants of the dot product abstract transformer (Section 4.8), we evaluate the certification of DeepT-Precise and DeepT-Fast against $\ell^{\infty}$ attacks. Additionally, we compare DeepT-Precise with CROWN-Backward since they both operate in the regime of more precise but slower verification (Table 4). Because of the reduced speed, we only perturb a randomly chosen position per example sentence instead of evaluating perturbations for all positions. The accuracies for the 3, 6 and 12 layer networks we evaluate on are $83.5\%$ , $83.7\%$ and $83.4\%$ respectively.  
 
@@ -597,7 +612,7 @@ Table 5. Certified radius (min and avg) and time (in seconds) for $\ell^{p}$ per
 
 ![](images/60d92353505a53a13ee2c6807653cbfbf13c07865e3571694287e3d72894ceab.jpg)  
 
-# 6.4 Comparison for $\ell^{1}$ and $\ell^{2}$ Perturbations  
+## 6.4 Comparison for $\ell^{1}$ and $\ell^{2}$ Perturbations  
 
 We also compare DeepT-Fast with CROWN-Backward for $\ell^{p}$ where $p\in\{1,2\}$ , as well as with CROWN-BaF (Table 5).  
 
@@ -617,11 +632,11 @@ Table 7. Certified radius (min and avg), time (in seconds) and ratio of the cert
 
 and the 12 layer network. This still indicates that DeepT-Fast scales better compared to CROWN-BaF in width and depth.  
 
-# 6.5 Dual Norm Order  
+## 6.5 Dual Norm Order  
 
 Since the final bound obtained by the DeepT-Fast dot product transformer is not symmetric in $W$ and $V$ (Section 4.8), we evaluated both orders (Table 6) which showed that on average it is slightly advantageous to apply the dual norm first on the $\ell^{\infty}$ -norm terms and then on the $\ell^{p}$ -norm terms.  
 
-# 6.6 Standard Layer Normalization Results  
+## 6.6 Standard Layer Normalization Results  
 
 The certification experiments presented in this work evaluate our methods on Transformer networks without the division by the standard deviation in the layer normalization, as described in [47]. They report improved certification rates without a significant impact on performance. Our experiments (Table 7) confirm the observation of [47]. The accuracies of the Transformer networks using division are $81.9\%$ , $82.2\%$ and $81.8\%$ respectively for the 3, 6 and 12 layer Transformer networks. The accuracies are slightly lower than the accuracies of the Transformer networks without division by the standard deviation, but the latter has almost always the larger certification radii.  
 
@@ -629,13 +644,13 @@ Table 8. Comparison between CROWN-BaF and DeepT-Fast for robustness certificatio
 
 ![](images/df40eba2e82281220f0ba87dec69e7956f196d877f06020308d53555854fe21a.jpg)  
 
-# 6.7 Certification against Synonym Attacks  
+## 6.7 Certification against Synonym Attacks  
 
 We also evaluate our method against threat model T2, where every word in the input sequence can be replaced by one of its synonyms independently, making it significantly more difficult to certify compared to threat model T1. Note, that the threat model T2 covers also a threat model where only a fixed number of words can be replaced by synonyms as T2 is strictly stronger. We focus on sentences of up to 26 words where the number of combinations of synonyms is at least 32 000, though many considered sentences have significantly more combinations, because they pose a more difficult verification challenge as they are the ones for which enumeration-based methods are considerably slower than our certification methods.  
 
 When comparing the certified robustness rates of DeepTFast against CROWN-BaF (Table 8), we see that the performance is comparable on a 3 layer Transformer network trained for certifiability using the method provided in [57]. The accuracy is $81.7\%$ . We note that some verified sentences have millions of combinations and testing all combinations would take at least 2 orders of magnitude more time. DeepTFast is competitive with CROWN-BaF, even though the training method is tailored to improve the verification success rate of the CROWN method and the small size of the network. The verifiers could not be evaluated on larger networks because the certified training method [57] failed for larger networks. We conjecture that DeepT-Fast would achieve superior verification compared to CROWN-BaF in the large-network setting. Table 9 details one of these certifiable sentences with 23 million possible combinations.  
 
-# 6.8 Summary  
+## 6.8 Summary  
 
 At a high level, our results indicate that if one is interested in pushing certification for deeper Transformer networks (as typically used in practice), then DeepT-Fast would be the preferred choice as it scales well while being significantly more precise than current state-of-the-art. If one is interested in the maximal attainable precision, then DeepT-Precise would be preferred as it is currently the most precise Transformer network verifier.  
 
